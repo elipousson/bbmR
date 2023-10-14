@@ -8,7 +8,7 @@ Authors@R: c(
   )
 Maintainer: Sara Brumfield <sara.brumfield2@baltimorecity.gov>
 Description: Functions that facilitate common data-related tasks for the
-    Baltimore City Bureau of the Budget and Management Research
+    Baltimore City Bureau of the Budget and Management Research.
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
@@ -24,3 +24,4 @@ Imports:
     odbc,
     openxlsx,
     stringr
+License: MIT + file LICENSE
