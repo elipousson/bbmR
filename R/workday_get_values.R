@@ -5,15 +5,17 @@
 #' @author Sara Brumfield
 
 
-#x-ref files for Workday and BPFS ===============================
+# x-ref files for Workday and BPFS ===============================
+#' @importFrom readxl read_excel
 workday_get_values <- function() {
-
   x_fund <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Fund") %>%
     select(`FUND ID`, `Fund Name`, `Fund`) %>%
     rename(`BPFS Fund` = `Fund`) %>%
     rename(`Workday Fund` = `FUND ID`) %>%
-  mutate(`BPFS Fund` = as.numeric(`BPFS Fund`),
-         `Workday Fund` = as.numeric(`Workday Fund`))
+    mutate(
+      `BPFS Fund` = as.numeric(`BPFS Fund`),
+      `Workday Fund` = as.numeric(`Workday Fund`)
+    )
 
   x_spend_cat <- import("G:/Fiscal Years/SubObject_SpendCategory.xlsx")
 
@@ -22,39 +24,44 @@ workday_get_values <- function() {
 
   x_grant <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "ProjectGrant") %>%
     select(`Grant / Project`, `Financial Grant ID`, `Financial Grant Name`, `Financials Proj ID`, `Financials Proj Name`, `SpecialPurpose`, `Special Purpose Name`) %>%
-    mutate(`Grant / Project` = as.character(`Grant / Project`),
-           Grant = as.numeric(substr(`Grant / Project`, 1, 4)))
+    mutate(
+      `Grant / Project` = as.character(`Grant / Project`),
+      Grant = as.numeric(substr(`Grant / Project`, 1, 4))
+    )
 
   x_ledger <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Natural") %>%
     select(`Natural`, `Ledger Acct ID`, `Account Name`, `SC ID`, `Spend Cat`)
 
-  x_sp <- readxl::read_excel("Baltimore FDM Crosswalk.xlsx", sheet = "ProjectGrant")%>%
-    select(`Grant / Project`, `SpecialPurpose`, `Special Purpose Name`)%>%
+  x_sp <- readxl::read_excel("Baltimore FDM Crosswalk.xlsx", sheet = "ProjectGrant") %>%
+    select(`Grant / Project`, `SpecialPurpose`, `Special Purpose Name`) %>%
     mutate(`Grant / Project` = as.character(`Grant / Project`))
 
-  #read in bpfs account xwalk
+  # read in bpfs account xwalk
   acct_26 <- query_db(paste0("planningyear24"), "ACCT_MAP_26_15") %>%
     collect() %>%
-    mutate(PROGRAM_ID = as.numeric(PROGRAM_ID),
-           ACTIVITY_ID = as.numeric(ACTIVITY_ID),
-           SUBACTIVITY_ID = as.numeric(SUBACTIVITY_ID),
-           FUND_ID = as.numeric(FUND_ID),
-           DETAILED_FUND_ID = as.numeric(DETAILED_FUND_ID),
-           OBJECT_ID = as.numeric(OBJECT_ID),
-           SUBOBJECT_ID = as.numeric(SUBOBJECT_ID),
-           `Activity ID` = as.numeric(substr(DIGIT_ACCOUNT_26, start = 18, stop = 21)),
-           Natural = as.numeric(substr(DIGIT_ACCOUNT_26, start = 25, stop = 30)))
+    mutate(
+      PROGRAM_ID = as.numeric(PROGRAM_ID),
+      ACTIVITY_ID = as.numeric(ACTIVITY_ID),
+      SUBACTIVITY_ID = as.numeric(SUBACTIVITY_ID),
+      FUND_ID = as.numeric(FUND_ID),
+      DETAILED_FUND_ID = as.numeric(DETAILED_FUND_ID),
+      OBJECT_ID = as.numeric(OBJECT_ID),
+      SUBOBJECT_ID = as.numeric(SUBOBJECT_ID),
+      `Activity ID` = as.numeric(substr(DIGIT_ACCOUNT_26, start = 18, stop = 21)),
+      Natural = as.numeric(substr(DIGIT_ACCOUNT_26, start = 25, stop = 30))
+    )
 
-  data <- list(fund = x_fund,
-               spend_cat = x_spend_cat,
-               cc = x_cc,
-               grant = x_grant,
-               sp = x_sp,
-               ledger = x_ledger,
-               acct_26 = acct_26)
+  data <- list(
+    fund = x_fund,
+    spend_cat = x_spend_cat,
+    cc = x_cc,
+    grant = x_grant,
+    sp = x_sp,
+    ledger = x_ledger,
+    acct_26 = acct_26
+  )
 
   return(data)
-
 }
 
 
@@ -66,10 +73,12 @@ workday_get_values <- function() {
 
 make_program_activity <- function(data = df, program_col = `Program ID`, activity_col = `Activity ID.y`,
                                   subactivity_col = SUBACTIVITY_ID) {
-  var = paste0(str_pad(df$program_col, width = 4, pad = 0, side = "right"),
-         "-",
-         str_pad(df$activity_col, width = 3, pad = 0, side = "right"),
-         str_pad(df$subactivity_col, width = 2, pad = 0, side = "left"))
+  var <- paste0(
+    str_pad(df$program_col, width = 4, pad = 0, side = "right"),
+    "-",
+    str_pad(df$activity_col, width = 3, pad = 0, side = "right"),
+    str_pad(df$subactivity_col, width = 2, pad = 0, side = "left")
+  )
 
   return(var)
 }
@@ -82,6 +91,6 @@ make_program_activity <- function(data = df, program_col = `Program ID`, activit
 
 
 extract_program_activity <- function(col = DIGIT_ACCOUNT_26) {
-  var = substr(col, 13,23)
+  var <- substr(col, 13, 23)
   return(var)
 }

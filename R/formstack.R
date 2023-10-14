@@ -4,7 +4,7 @@
 #'
 #' @author Lillian Nguyen
 #'
-#' @import httr
+#' @importFrom httr oauth_endpoint oauth_app
 #' @export
 
 
@@ -13,12 +13,14 @@ connect_fs_api <- function() {
     key = Sys.getenv("FS_API_KEY"),
     endpoint = httr::oauth_endpoint(
       authorize = Sys.getenv("FS_OAUTH_AUTHORIZE"),
-      access = "https://www.formstack.com/api/v2/oauth2/token"),
+      access = "https://www.formstack.com/api/v2/oauth2/token"
+    ),
     app = httr::oauth_app(
       "R",
       key = Sys.getenv("FS_OAUTH_KEY"),
       secret = Sys.getenv("FS_OAUTH_SECRET"),
-      redirect_uri = Sys.getenv("FS_OAUTH_REDIR"))
+      redirect_uri = Sys.getenv("FS_OAUTH_REDIR")
+    )
   )
 }
 
@@ -26,7 +28,7 @@ connect_fs_api <- function() {
 #' Get Formstack submissions
 #'
 #' Use this for finer-grained control of Formstack submission retrieval. This
-#' function is the backbone of extract_fs_submissions().
+#' function is the backbone of [extract_fs_submissions()].
 #'
 #' @param api, A list containing the API connection to Formstack,
 #' generated from  connect_fs_api()
@@ -39,18 +41,21 @@ connect_fs_api <- function() {
 #'
 #' @author Lillian Nguyen
 #'
-#' @import httr
+#' @importFrom httr GET add_headers content
 #' @importFrom assertthat assert_that are_equal
 #' @export
 
-get_fs_submissions <- function(api, form_id, query) {
+get_fs_submissions <- function(api, form_id, query, per_page = 100) {
   # query
   httr::GET(paste0("https://www.formstack.com/api/v2/form/", form_id, "/submission.json"),
-      add_headers(Authorization = paste("Bearer", api$key, sep = " ")),
-      query = c(list(id = form_id,
-                     data = 1,
-                     per_page = 100), query),
-      encode = "json") %>%
+    httr::add_headers(Authorization = paste("Bearer", api$key, sep = " ")),
+    query = c(list(
+      id = form_id,
+      data = 1,
+      per_page = per_page
+    ), query),
+    encode = "json"
+  ) %>%
     httr::content()
 }
 
@@ -73,12 +78,12 @@ get_fs_submissions <- function(api, form_id, query) {
 #' @export
 
 extract_fs_submissions <- function(api, form_id, approved_only = FALSE) {
-
   payload <-
     get_fs_submissions(
       api = api,
       form_id = form_id,
-      query = list(per_page = 100))
+      query = list(per_page = 100)
+    )
 
   # Then pull data from each of those pages into a master df
   x <- 1:payload$pages
@@ -87,9 +92,12 @@ extract_fs_submissions <- function(api, form_id, approved_only = FALSE) {
     raw <- get_fs_submissions(
       api = api,
       form_id = form_id,
-      query = list(page = x,
-                   per_page = 100,
-                   data = 1)) %>%
+      query = list(
+        page = x,
+        per_page = 100,
+        data = 1
+      )
+    ) %>%
       extract2("submissions")
 
     time <- raw %>%
@@ -102,7 +110,9 @@ extract_fs_submissions <- function(api, form_id, approved_only = FALSE) {
           map(extract2, "data") %>%
           set_names(time),
         approvals = raw %>%
-          map(extract2, "approval_status")))
+          map(extract2, "approval_status")
+      )
+    )
   })
 
   # submissions are organized in lists by page;
@@ -114,7 +124,6 @@ extract_fs_submissions <- function(api, form_id, approved_only = FALSE) {
     unlist()
 
   df <- map(1:length(submissions), function(x) {
-
     submissions[[x]] %>%
       toJSON() %>%
       fromJSON() %>%

@@ -11,13 +11,14 @@
 #' @export
 
 create_analyst_dirs <- function(path, additional_folders = NULL) {
-
   if (missing(path)) {
     path <- getwd()
   }
 
-  analysts <- c(unlist(strsplit(Sys.getenv("BBMR_ANALYSTS"), "|", fixed = TRUE)),
-                additional_folders)
+  analysts <- c(
+    unlist(strsplit(Sys.getenv("BBMR_ANALYSTS"), "|", fixed = TRUE)),
+    additional_folders
+  )
 
   if (stringr::str_trunc(path, 1, side = "left", ellipsis = "") == "/") {
     dirs <- paste0(path, analysts)

@@ -10,7 +10,7 @@
 #'
 #' @return A new .xlsx file with records from a single dataframe placed on multiple tabs
 #'
-#' @seealso \code{\link{export_excel}}
+#' @seealso [export_excel()]
 #'
 #' @examples
 #' export_excel_tabs(iris, "Species", "iris.xlsx")
@@ -21,30 +21,39 @@
 #' @import openxlsx
 #' @export
 
-export_excel_tabs <- function(df, tab_name, file_name, drop_col = TRUE, col_width = 'auto') {
-
+export_excel_tabs <- function(df, tab_name, file_name, drop_col = TRUE, col_width = "auto") {
   # Exception handling ####
   if (missing(df) | missing(tab_name) | missing(file_name)) {
-    stop("Missing argument(s)")}
+    stop("Missing argument(s)")
+  }
   if (!grepl("\\.xlsx", file_name)) {
-    stop('Please ensure that the file_name includes the .xlsx extension.')}
+    stop("Please ensure that the file_name includes the .xlsx extension.")
+  }
   if (!tab_name %in% colnames(df)) {
-    stop('Please specify a column name that is in the dataframe.')}
+    stop("Please specify a column name that is in the dataframe.")
+  }
 
-  names <- df %>% extract2(tab_name) %>% unique %>% as.character %>% sort()
+  names <- df %>%
+    extract2(tab_name) %>%
+    unique() %>%
+    as.character() %>%
+    sort()
 
   if ((nchar(names) > 31) %>% any()) {
-    stop("Please shorten all values in your 'tab name' column to <31 characters.")}
+    stop("Please shorten all values in your 'tab name' column to <31 characters.")
+  }
 
   # FUNCTION #####################################################################
 
-  Sys.setenv("R_ZIPCMD" = "C:/Rtools/bin/zip.exe")  # corrects Rtools in wrong env error
+  Sys.setenv("R_ZIPCMD" = "C:/Rtools/bin/zip.exe") # corrects Rtools in wrong env error
 
-  options("openxlsx.orientation" = "landscape",
-          "openxlsx.datetimeFormat" = "mm/dd/yyyy")
+  options(
+    "openxlsx.orientation" = "landscape",
+    "openxlsx.datetimeFormat" = "mm/dd/yyyy"
+  )
 
   excel <- openxlsx::createWorkbook()
-  title <- gsub('\\..*', '', file_name)
+  title <- gsub("\\..*", "", file_name)
   today <- as.character(Sys.Date())
 
   # Filter the dataframe by each value in the tab_name col and export to Excel
@@ -56,14 +65,15 @@ export_excel_tabs <- function(df, tab_name, file_name, drop_col = TRUE, col_widt
     }
 
     excel %T>%
-      openxlsx::addWorksheet(i, header = c(title, "&[Tab]", today),
-                             footer = c(NA, "&[Page] of &[Pages]", NA)) %T>%
+      openxlsx::addWorksheet(i,
+        header = c(title, "&[Tab]", today),
+        footer = c(NA, "&[Page] of &[Pages]", NA)
+      ) %T>%
       openxlsx::writeDataTable(i, tab.data, tableStyle = "TableStyleLight1") %T>%
       openxlsx::setColWidths(i, 1:ncol(tab.data), widths = col_width) %T>%
       openxlsx::pageSetup(i, printTitleRows = 1) # repeat first row when printing
   }
 
   openxlsx::saveWorkbook(excel, file_name, overwrite = TRUE)
-  base::message('Data separated into ', length(names), ' tabs by ', tab_name, ' and saved as ', file_name)
-
+  base::message("Data separated into ", length(names), " tabs by ", tab_name, " and saved as ", file_name)
 }

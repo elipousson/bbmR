@@ -17,7 +17,7 @@ df with modified agency columns
 Combine agency data where legacy systems differ from existing municipal organization
 }
 \seealso{
-\code{\link{rename_colsl}}
+[rename_cols()]
 }
 \author{
 Lillian Nguyen

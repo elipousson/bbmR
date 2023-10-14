@@ -28,7 +28,7 @@ export_excel_tabs(iris, "Species", "iris.xlsx")
 
 }
 \seealso{
-\code{\link{export_excel}}
+[export_excel()]
 }
 \author{
 Jeremy Pesner, Lillian Nguyen

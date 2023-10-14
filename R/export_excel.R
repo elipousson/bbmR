@@ -15,61 +15,74 @@
 #'
 #' @return A new .xlsx file or a new sheet in an existing .xlsx file
 #'
-#' @seealso \code{\link{export_excel_tabs}}
+#' @seealso [export_excel_tabs()]
 #'
 #' @examples
-#' export_excel(iris, "Iris Data","iris.xlsx", "new")
 #'
-#' # if using option to resize columns
-#' export_excel(iris, "Iris Data","iris.xlsx", "new", rep(15, 5))
+#' withr::with_tempdir({
+#'   export_excel(iris, "Iris Data", "iris.xlsx", "new")
+#'
+#'   # if using option to resize columns
+#'   export_excel(iris, "Iris Data", "iris.xlsx", "new", rep(15, 5))
+#' })
 #'
 #' @author Jeremy Pesner, Lillian Nguyen
 #'
 #' @import magrittr
 #' @import openxlsx
+#' @importFrom withr with_tempdir
 #' @export
 
 export_excel <- function(
-  df, tab_name, file_name, type = "new", col_width = 'auto',
-  tab_color = NULL, table_name = NULL, show_tab = TRUE, save = TRUE) {
-
+    df, tab_name, file_name, type = "new", col_width = "auto",
+    tab_color = NULL, table_name = NULL, show_tab = TRUE, save = TRUE) {
   if (missing(df) | missing(tab_name) | missing(file_name)) {
-    stop("Missing argument(s)")}
-  if (!type %in% c("new", "existing")){
+    stop("Missing argument(s)")
+  }
+  if (!type %in% c("new", "existing")) {
     stop('Please specify if you are exporting a worksheet to a \"new\"
-         or \"existing\" Excel file')}
-  if (!grepl("\\.xlsx", file_name)){
-    stop('Please ensure that the file_name includes the .xlsx extension.')}
+         or \"existing\" Excel file')
+  }
+  if (!grepl("\\.xlsx", file_name)) {
+    stop("Please ensure that the file_name includes the .xlsx extension.")
+  }
   tab_name %<>% as.character
-  if (nchar(tab_name) > 31){
-    stop("Please shorten the tab name to 31 characters or fewer.")}
+  if (nchar(tab_name) > 31) {
+    stop("Please shorten the tab name to 31 characters or fewer.")
+  }
 
   Sys.setenv("R_ZIPCMD" = "C:/Rtools/bin/zip.exe") # corrects Rtools in wrong env error
 
-  options("openxlsx.orientation" = "landscape",
-          "openxlsx.datetimeFormat" = "yyyy-mm-dd")
+  options(
+    "openxlsx.orientation" = "landscape",
+    "openxlsx.datetimeFormat" = "yyyy-mm-dd"
+  )
   excel <- switch(type,
-                  "new" = openxlsx::createWorkbook(),
-                  "existing" = openxlsx::loadWorkbook(file_name)) %T>%
+    "new" = openxlsx::createWorkbook(),
+    "existing" = openxlsx::loadWorkbook(file_name)
+  ) %T>%
     openxlsx::modifyBaseFont(fontSize = 10) %T>%
     openxlsx::addWorksheet(
-      tab_name, tabColour = tab_color,
-      header = c(gsub('\\..*', '', file_name), "&[Tab]", as.character(Sys.Date())),
-      footer = c(NA, "&[Page]", NA), visible = show_tab) %T>%
+      tab_name,
+      tabColour = tab_color,
+      header = c(gsub("\\..*", "", file_name), "&[Tab]", as.character(Sys.Date())),
+      footer = c(NA, "&[Page]", NA), visible = show_tab
+    ) %T>%
     openxlsx::writeDataTable(
       tab_name, df,
       tableStyle = "none", headerStyle =
         createStyle(textDecoration = "bold", border = "bottom", borderStyle = "thin"),
-      tableName = table_name) %T>%
+      tableName = table_name
+    ) %T>%
     openxlsx::setColWidths(tab_name, 1:ncol(df), widths = col_width) %T>%
     openxlsx::freezePane(tab_name, 1, firstRow = TRUE) %T>%
     openxlsx::pageSetup(tab_name, printTitleRows = 1) # repeat first row when printing
 
   if (save == TRUE) {
     openxlsx::saveWorkbook(excel, file_name, overwrite = TRUE)
-    base::message(tab_name, ' tab created in the file saved as ', file_name)
+    base::message(tab_name, " tab created in the file saved as ", file_name)
   } else {
-    base::message(tab_name, ' not saved. Use openxlsx::saveWorkbook().')
+    base::message(tab_name, " not saved. Use openxlsx::saveWorkbook().")
     return(excel)
   }
 }

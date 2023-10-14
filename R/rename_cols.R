@@ -13,7 +13,7 @@
 #' @import dplyr
 #' @export
 
-rename_upper_to_title <- function(df){
+rename_upper_to_title <- function(df) {
   col_names_original <- colnames(df)
   col_names_title_case <- str_to_title(col_names_original)
   col_names_title_case <- gsub(pattern = "Id", x = col_names_title_case, replacement = "ID")
@@ -40,9 +40,9 @@ rename_upper_to_title <- function(df){
 #' @export
 
 rename_cols <- function(df) {
-
-  if (missing(df))
+  if (missing(df)) {
     stop("Missing dataframe")
+  }
 
   x <- colnames(df) %>%
     # Converts % and $ to words to avoid losing that info in colnames
@@ -53,7 +53,7 @@ rename_cols <- function(df) {
     tolower() %>%
     dplyr::recode(
       # Line items
-      "agencyid"  = "Agency ID", "agencyname" = "Agency Name",
+      "agencyid" = "Agency ID", "agencyname" = "Agency Name",
       "serviceid" = "Service ID", "servicename" = "Service Name",
       "programid" = "Service ID", "programname" = "Service Name",
       "activityid" = "Activity ID", "activityname" = "Activity Name",
@@ -103,12 +103,18 @@ rename_cols <- function(df) {
     grepl("^fy{1}[0-9]{2}cou", x) ~
       paste0("FY", str_extract(x, "[0-9]{2}"), " COU"),
     grepl("^fy{1}[0-9]{2}cls|tls", x) ~
-      paste0("FY", str_extract(x, "[0-9]{2}"), " ",
-             toupper(str_replace(x, "fy{1}[0-9]{2}", ""))),
+      paste0(
+        "FY", str_extract(x, "[0-9]{2}"), " ",
+        toupper(str_replace(x, "fy{1}[0-9]{2}", ""))
+      ),
     grepl("^fy{1}[0-9]{2}[^cls|tls|boe|finrec]", x) ~
-      paste0("FY", str_extract(x, "[0-9]{2}"), " ",
-             tools::toTitleCase(str_replace(x, "fy{1}[0-9]{2}", ""))),
+      paste0(
+        "FY", str_extract(x, "[0-9]{2}"), " ",
+        tools::toTitleCase(str_replace(x, "fy{1}[0-9]{2}", ""))
+      ),
     # months (expenditure report)
     x %in% tolower(c(month.abb, month.name)) ~ tools::toTitleCase(x),
-    TRUE ~ x) %>%
-    return() }
+    TRUE ~ x
+  ) %>%
+    return()
+}

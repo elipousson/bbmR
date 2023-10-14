@@ -17,7 +17,6 @@
 #' @export
 
 order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
-
   funds <- c(
     # operating
     "General", "Internal Service", "Convention Center Bond",
@@ -26,7 +25,7 @@ order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
     "Loan and Guarantee Enterprise",
     "Parking Enterprise", "Parking Management",
     "Federal", "State",
-    #ARPA
+    # ARPA
     "American Rescue Plan Act",
     # should eventually remove "special"
     "Special", "Special Revenue", "Special Grant",
@@ -34,7 +33,8 @@ order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
     "General Obligation Bonds", "Revenue Bonds",
     "County Transportation Bonds",
     # other
-    "Other")
+    "Other"
+  )
 
   if (!is.null(before)) {
     funds <- c(before, funds)
@@ -46,7 +46,6 @@ order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
 
   df %>%
     mutate(!!sym(col) := factor(!!sym(col), funds))
-
 }
 
 #' Categorize operating funds
@@ -69,8 +68,7 @@ order_funds <- function(df, col = "Fund Name", before = NULL, after = NULL) {
 #' @export
 #'
 categorize_op_funds <- function(df, fund_col = "Fund Name",
-                                 cat_col = "Fund Category", after = NULL) {
-
+                                cat_col = "Fund Category", after = NULL) {
   fund_col <- sym(fund_col)
   cat_col <- sym(cat_col)
 
@@ -81,9 +79,13 @@ categorize_op_funds <- function(df, fund_col = "Fund Name",
         !!fund_col == "Internal Service" ~ "Internal Service Fund",
         !!fund_col %in% c("Parking Management", "Convention Center Bond") ~ "Special Purpose Funds",
         !!fund_col %in% c("Federal", "State", "Special Grant", "Special Revenue") ~ "Grant Funds",
-        !!fund_col %in% c("Parking Enterprise", "Conduit Enterprise", "Loan and Guarantee Enterprise",
-                          "Wastewater Utility", "Water Utility", "Stormwater Utility") ~ "Enterprise Funds",
-        TRUE ~ !!fund_col))
+        !!fund_col %in% c(
+          "Parking Enterprise", "Conduit Enterprise", "Loan and Guarantee Enterprise",
+          "Wastewater Utility", "Water Utility", "Stormwater Utility"
+        ) ~ "Enterprise Funds",
+        TRUE ~ !!fund_col
+      )
+    )
 
   funds <- c("General Fund", "Special Purpose Funds", "Grant Funds", "Enterprise Funds", "Internal Service Fund")
 
@@ -93,6 +95,4 @@ categorize_op_funds <- function(df, fund_col = "Fund Name",
 
   df %>%
     mutate(!!cat_col := factor(!!cat_col, funds))
-
 }
-

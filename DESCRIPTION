@@ -21,7 +21,11 @@ Imports:
     jsonlite,
     lubridate,
     magrittr,
+    methods,
     odbc,
     openxlsx,
-    stringr
+    readxl,
+    stats,
+    stringr,
+    withr
 License: MIT + file LICENSE

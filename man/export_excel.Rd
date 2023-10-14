@@ -42,14 +42,17 @@ A new .xlsx file or a new sheet in an existing .xlsx file
 Exports Excel sheets with table formatting, headers, auto-column width, etc. Currently does not auto-size columns with dates correctly.
 }
 \examples{
-export_excel(iris, "Iris Data","iris.xlsx", "new")
 
-# if using option to resize columns
-export_excel(iris, "Iris Data","iris.xlsx", "new", rep(15, 5))
+withr::with_tempdir({
+  export_excel(iris, "Iris Data", "iris.xlsx", "new")
+
+  # if using option to resize columns
+  export_excel(iris, "Iris Data", "iris.xlsx", "new", rep(15, 5))
+})
 
 }
 \seealso{
-\code{\link{export_excel_tabs}}
+[export_excel_tabs()]
 }
 \author{
 Jeremy Pesner, Lillian Nguyen

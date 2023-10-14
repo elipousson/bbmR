@@ -4,7 +4,7 @@
 \alias{get_fs_submissions}
 \title{Get Formstack submissions}
 \usage{
-get_fs_submissions(api, form_id, query)
+get_fs_submissions(api, form_id, query, per_page = 100)
 }
 \arguments{
 \item{api, }{A list containing the API connection to Formstack,
@@ -22,7 +22,7 @@ A list with payload and submission data
 }
 \description{
 Use this for finer-grained control of Formstack submission retrieval. This
-function is the backbone of extract_fs_submissions().
+function is the backbone of [extract_fs_submissions()].
 }
 \author{
 Lillian Nguyen

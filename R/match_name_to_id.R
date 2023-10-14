@@ -13,14 +13,16 @@
 #'
 #' @author Lillian Nguyen
 #'
-#' @import tidyverse
+#' @import dplyr
+#' @importFrom methods hasArg
 #' @export
 
 match_name_to_id <- function(df, cols, incl.higher, fy = 22) {
-
-  if (!hasArg(cols)) {
-    cols <- c("Detailed Fund", "Service", "Activity",
-              "Fund", "Agency", "Object", "Subobject")
+  if (!methods::hasArg(cols)) {
+    cols <- c(
+      "Detailed Fund", "Service", "Activity",
+      "Fund", "Agency", "Object", "Subobject"
+    )
   }
 
   l <- list()
@@ -34,26 +36,38 @@ match_name_to_id <- function(df, cols, incl.higher, fy = 22) {
 
   for (i in c("Detailed Fund", "Service", "Activity", "Subactivity")) {
     if (i %in% cols) {
-      higher <- switch(i, "Detailed Fund" = "Fund", "Service" = "Agency",
-                       "Activity" = "Program", "Subactivity" = "Activity")
+      higher <- switch(i,
+        "Detailed Fund" = "Fund",
+        "Service" = "Agency",
+        "Activity" = "Program",
+        "Subactivity" = "Activity"
+      )
 
       l[[i]] <- query_db(
         paste0("planningyear", fy),
-        switch(i, "Detailed Fund" = "detailed_fund", "Service" = "program",
-               "Activity" = "activity", "Subactivity" = "subactivity"))
+        switch(i,
+          "Detailed Fund" = "detailed_fund",
+          "Service" = "program",
+          "Activity" = "activity",
+          "Subactivity" = "subactivity"
+        )
+      )
 
       if (incl.higher == TRUE) {
         if (i == "Subactivity") {
           l[[i]] <- l[[i]] %>%
-            select(`Subactivity ID` = ID, `Subactivity Name` = NAME,
-                   `Activity ID` = `ACTIVITY_ID`, `Service ID` = `PROGRAM_ID`)
+            select(
+              `Subactivity ID` = ID, `Subactivity Name` = NAME,
+              `Activity ID` = `ACTIVITY_ID`, `Service ID` = `PROGRAM_ID`
+            )
         } else {
           l[[i]] <- l[[i]] %>%
-            select(!!paste(i, "ID") := ID, !!paste(i, "Name") := NAME,
-                   !!paste(ifelse(higher == "Program", "Service", higher), "ID") :=
-                     paste0(toupper(higher), "_ID"))
+            select(
+              !!paste(i, "ID") := ID, !!paste(i, "Name") := NAME,
+              !!paste(ifelse(higher == "Program", "Service", higher), "ID") :=
+                paste0(toupper(higher), "_ID")
+            )
         }
-
       } else {
         l[[i]] <- l[[i]] %>%
           select(!!paste(i, "ID") := ID, !!paste(i, "Name") := NAME)
@@ -64,7 +78,7 @@ match_name_to_id <- function(df, cols, incl.higher, fy = 22) {
   l <- map(l, collect)
 
   if ("Activity" %in% cols) {
-    l$Activity %<>%  mutate(`Activity ID` = str_pad(`Activity ID`, 3, "left", "0"))
+    l$Activity %<>% mutate(`Activity ID` = str_pad(`Activity ID`, 3, "left", "0"))
   }
 
   for (j in cols) {
@@ -74,9 +88,10 @@ match_name_to_id <- function(df, cols, incl.higher, fy = 22) {
 
   # reorder in order of cols as listed in argument
   df %<>%
-    select(one_of(paste(rep(cols, each = 2), c("ID", "Name"))),
-           everything())
+    select(
+      one_of(paste(rep(cols, each = 2), c("ID", "Name"))),
+      everything()
+    )
 
   return(df)
-
 }
