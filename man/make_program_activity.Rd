@@ -11,6 +11,13 @@ make_program_activity(
   subactivity_col = SUBACTIVITY_ID
 )
 }
+\arguments{
+\item{program_col}{Program ID column name}
+
+\item{activity_col}{Activity ID column name}
+
+\item{subactivity_col}{Sub-activity ID column name}
+}
 \value{
 concatentated string value
 }

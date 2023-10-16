@@ -2,15 +2,20 @@
 % Please edit documentation in R/workday_get_values.R
 \name{extract_program_activity}
 \alias{extract_program_activity}
-\title{Extracts BPFS values from the 26-digit legacy account # to create a Workday-compatible Program-Activity field}
+\title{Extracts BPFS values from the 26-digit legacy account # to create a
+Workday-compatible Program-Activity field}
 \usage{
 extract_program_activity(col = DIGIT_ACCOUNT_26)
+}
+\arguments{
+\item{col}{Legacy account ID column name}
 }
 \value{
 concatentated string value
 }
 \description{
-Extracts BPFS values from the 26-digit legacy account # to create a Workday-compatible Program-Activity field
+Extracts BPFS values from the 26-digit legacy account # to create a
+Workday-compatible Program-Activity field
 }
 \author{
 Sara Brumfield

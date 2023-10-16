@@ -1,5 +1,7 @@
 #' Retrieves Workday values from the foundational data model file
 #' Matches Workday fund = fund, spend category = OSO, cost center = program + activity, grant = detailed fund, ledger = payroll natural
+#' @param fdm_xwalk_file Path to "Baltimore FDM Crosswalk.xlsx" Excel file
+#' @param spend_cat_file Path to "SubObject_SpendCategory.xlsx" Excel file
 #' @return list of dataframes
 #'
 #' @author Sara Brumfield
@@ -7,8 +9,9 @@
 
 # x-ref files for Workday and BPFS ===============================
 #' @importFrom readxl read_excel
-workday_get_values <- function() {
-  x_fund <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Fund") %>%
+workday_get_values <- function(fdm_xwalk_file = "G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx",
+                               spend_cat_file = "G:/Fiscal Years/SubObject_SpendCategory.xlsx") {
+  x_fund <- import(fdm_xwalk_file, which = "Fund") %>%
     select(`FUND ID`, `Fund Name`, `Fund`) %>%
     rename(`BPFS Fund` = `Fund`) %>%
     rename(`Workday Fund` = `FUND ID`) %>%
@@ -17,22 +20,22 @@ workday_get_values <- function() {
       `Workday Fund` = as.numeric(`Workday Fund`)
     )
 
-  x_spend_cat <- import("G:/Fiscal Years/SubObject_SpendCategory.xlsx")
+  x_spend_cat <- import(spend_cat_file)
 
-  x_cc <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Pgm-Activity") %>%
+  x_cc <- import(fdm_xwalk_file, which = "Pgm-Activity") %>%
     select(`Pgm-Activity`, `CCA ID`, `CC Name`)
 
-  x_grant <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "ProjectGrant") %>%
+  x_grant <- import(fdm_xwalk_file, which = "ProjectGrant") %>%
     select(`Grant / Project`, `Financial Grant ID`, `Financial Grant Name`, `Financials Proj ID`, `Financials Proj Name`, `SpecialPurpose`, `Special Purpose Name`) %>%
     mutate(
       `Grant / Project` = as.character(`Grant / Project`),
       Grant = as.numeric(substr(`Grant / Project`, 1, 4))
     )
 
-  x_ledger <- import("G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx", which = "Natural") %>%
+  x_ledger <- import(fdm_xwalk_file, which = "Natural") %>%
     select(`Natural`, `Ledger Acct ID`, `Account Name`, `SC ID`, `Spend Cat`)
 
-  x_sp <- readxl::read_excel("Baltimore FDM Crosswalk.xlsx", sheet = "ProjectGrant") %>%
+  x_sp <- readxl::read_excel(basename(fdm_xwalk_file), sheet = "ProjectGrant") %>%
     select(`Grant / Project`, `SpecialPurpose`, `Special Purpose Name`) %>%
     mutate(`Grant / Project` = as.character(`Grant / Project`))
 
@@ -67,11 +70,16 @@ workday_get_values <- function() {
 
 #' Concatenates BPFS values to create a Workday-compatible Program-Activity field
 #'
+#' @param program_col Program ID column name
+#' @param activity_col Activity ID column name
+#' @param subactivity_col Sub-activity ID column name
 #' @return concatentated string value
 #'
 #' @author Sara Brumfield
 
-make_program_activity <- function(data = df, program_col = `Program ID`, activity_col = `Activity ID.y`,
+make_program_activity <- function(data = df,
+                                  program_col = `Program ID`,
+                                  activity_col = `Activity ID.y`,
                                   subactivity_col = SUBACTIVITY_ID) {
   var <- paste0(
     str_pad(df$program_col, width = 4, pad = 0, side = "right"),
@@ -83,8 +91,10 @@ make_program_activity <- function(data = df, program_col = `Program ID`, activit
   return(var)
 }
 
-#' Extracts BPFS values from the 26-digit legacy account # to create a Workday-compatible Program-Activity field
+#' Extracts BPFS values from the 26-digit legacy account # to create a
+#' Workday-compatible Program-Activity field
 #'
+#' @param col Legacy account ID column name
 #' @return concatentated string value
 #'
 #' @author Sara Brumfield

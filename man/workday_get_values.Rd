@@ -5,7 +5,15 @@
 \title{Retrieves Workday values from the foundational data model file
 Matches Workday fund = fund, spend category = OSO, cost center = program + activity, grant = detailed fund, ledger = payroll natural}
 \usage{
-workday_get_values()
+workday_get_values(
+  fdm_xwalk_file = "G:/Analyst Folders/Sara Brumfield/_ref/Baltimore FDM Crosswalk.xlsx",
+  spend_cat_file = "G:/Fiscal Years/SubObject_SpendCategory.xlsx"
+)
+}
+\arguments{
+\item{fdm_xwalk_file}{Path to "Baltimore FDM Crosswalk.xlsx" Excel file}
+
+\item{spend_cat_file}{Path to "SubObject_SpendCategory.xlsx" Excel file}
 }
 \value{
 list of dataframes
